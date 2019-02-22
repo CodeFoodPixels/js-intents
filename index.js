@@ -1,3 +1,5 @@
+const stopwords = require('./stopwords.json');
+
 module.exports = class Intents {
     constructor(intents, confidence) {
         this.intents = intents;
@@ -10,7 +12,7 @@ module.exports = class Intents {
             intents: []
         };
 
-        message = message.toLowerCase();
+        message = this.normaliseWords(message).split(' ');
 
         this.intents.forEach((intent) => {
             const score = {
@@ -20,7 +22,7 @@ module.exports = class Intents {
             };
 
             const multiplier = intent.keywords.reduce((multiplier, keyword) => {
-                if (message.includes(keyword.toLowerCase())) {
+                if (message.includes(this.normaliseWords(keyword))) {
                     return multiplier *= 2;
                 }
 
@@ -28,14 +30,18 @@ module.exports = class Intents {
             }, 1);
 
             intent.utterances.forEach((utterance) => {
-                const words = utterance.toLowerCase().split(` `);
-                const wordScore = 100/words.length;
-
+                const utteranceWords = this.normaliseWords(utterance).split(` `);
+                const stopwordCount = this.countStopwords(utterance);
+                const wordScore = 100/(utteranceWords.length - (stopwordCount * 0.75));
                 let utteranceMatchScore = 0;
 
-                words.forEach((word) => {
-                    if (message.includes(word)) {
-                        utteranceMatchScore += wordScore;
+                let messageCopy = message.slice(0);
+                utteranceWords.forEach((utteranceWord) => {
+                    const wordIndex = messageCopy.indexOf(utteranceWord);
+                    if (wordIndex > -1) {
+                        messageCopy = messageCopy.slice(wordIndex + 1)
+                        const wordMultiplier = stopwords.includes(utteranceWord) ? 0.25 : 1;
+                        utteranceMatchScore += wordScore * wordMultiplier;
                     }
                 });
 
@@ -60,5 +66,23 @@ module.exports = class Intents {
         }).sort((a, b) => {
             return b.confidence - a.confidence;
         });
+    }
+
+    normaliseWords(message) {
+        const punctuation = /[\'\`\"\’\‘\’\“\”\[\]\(\)\{\}\,\.\!\;\?\/\-\:\…]/g;
+
+        return message.toLowerCase().replace(punctuation, '');
+    }
+
+    countStopwords(message) {
+        const words = this.normaliseWords(message).split(` `);
+
+        return words.reduce((i, word) => {
+            if (stopwords.includes(word)) {
+                return ++i;
+            }
+
+            return i;
+        }, 0);
     }
 }

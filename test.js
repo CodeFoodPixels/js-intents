@@ -7,7 +7,8 @@ const intents = [
             "Weather",
             "Whats the weather like?",
             "Hows the weather looking?",
-            "Whats the weather forecast"
+            "Whats the weather forecast",
+            "whats the weather today"
         ],
         "keywords": [
             "Weather",
@@ -18,7 +19,7 @@ const intents = [
         "intentId": "NEWS",
         "utterances": [
             "News",
-            "Todays news",
+            "Today news",
             "Whats the top story?",
             "Whats the top news",
             "Whats going on today",
@@ -47,4 +48,4 @@ const intents = [
 
 const instance = new Intents(intents, 0);
 
-console.log(instance.rankIntents("hello, todays news story"));
+console.log(instance.rankIntents("Whats going on in the news today"));
