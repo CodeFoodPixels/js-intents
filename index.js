@@ -32,15 +32,15 @@ module.exports = class Intents {
             intent.utterances.forEach((utterance) => {
                 const utteranceWords = this.normaliseWords(utterance).split(` `);
                 const stopwordCount = this.countStopwords(utterance);
-                const wordScore = 100/(utteranceWords.length - (stopwordCount * 0.75));
+                const wordScore = 100/(utteranceWords.length - (stopwordCount * 0.9));
                 let utteranceMatchScore = 0;
 
                 let messageCopy = message.slice(0);
                 utteranceWords.forEach((utteranceWord) => {
                     const wordIndex = messageCopy.indexOf(utteranceWord);
                     if (wordIndex > -1) {
-                        messageCopy = messageCopy.slice(wordIndex + 1)
-                        const wordMultiplier = stopwords.includes(utteranceWord) ? 0.25 : 1;
+                        messageCopy = messageCopy.splice(0, wordIndex)
+                        const wordMultiplier = stopwords.includes(utteranceWord) ? 0.1 : 1;
                         utteranceMatchScore += wordScore * wordMultiplier;
                     }
                 });
